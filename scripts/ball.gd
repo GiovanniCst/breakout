@@ -32,5 +32,11 @@ func reset():
 	# For now, just stop movement
 	velocity = Vector2.ZERO
 
+func update_speed(new_speed: float):
+	# Update the speed and maintain the current direction
+	speed = new_speed
+	velocity = velocity.normalized() * speed
+	print("Ball speed updated to: ", speed)
+
 func set_paddle_reference(paddle: Node2D):
 	paddle_node = paddle
