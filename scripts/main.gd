@@ -28,6 +28,19 @@ var non_cracked_brick_textures = [
 	"res://assets/PNG/19-Breakout-Tiles.png"
 ]
 
+# Paths to unbreakable brick textures (from 22 to 30)
+var unbreakable_brick_textures = [
+	"res://assets/PNG/22-Breakout-Tiles.png",
+	"res://assets/PNG/23-Breakout-Tiles.png",
+	"res://assets/PNG/24-Breakout-Tiles.png",
+	"res://assets/PNG/25-Breakout-Tiles.png",
+	"res://assets/PNG/26-Breakout-Tiles.png",
+	"res://assets/PNG/27-Breakout-Tiles.png",
+	"res://assets/PNG/28-Breakout-Tiles.png",
+	"res://assets/PNG/29-Breakout-Tiles.png",
+	"res://assets/PNG/30-Breakout-Tiles.png"
+]
+
 # Scaled brick dimensions (original 384x128, scaled by 0.15)
 const SCALED_BRICK_WIDTH = 384 * 0.15
 const SCALED_BRICK_HEIGHT = 128 * 0.15
@@ -60,6 +73,7 @@ func _ready():
 	ui_node.initialize_ui()
 	
 	_populate_bricks() # Call the brick population function
+	_populate_unbreakable_bricks() # Call the unbreakable brick population function
 
 func _populate_bricks():
 	if not is_instance_valid(bricks_node):
@@ -91,6 +105,33 @@ func _populate_bricks():
 			new_brick.position = Vector2(current_x + SCALED_BRICK_WIDTH / 2, current_y + SCALED_BRICK_HEIGHT / 2) # Position brick by its center
 			current_x += SCALED_BRICK_WIDTH + brick_spacing_x
 		current_y += SCALED_BRICK_HEIGHT + brick_spacing_y
+
+func _populate_unbreakable_bricks():
+	if not is_instance_valid(bricks_node):
+		print("Error: Bricks Node2D not found in Main scene for unbreakable bricks!")
+		return
+
+	var unbreakable_brick_min_y = 200.0 # Starting Y position for unbreakable bricks
+	var unbreakable_brick_max_y = 400.0 # Ending Y position for unbreakable bricks
+	var min_unbreakable_bricks = 3
+	var max_unbreakable_bricks = 7
+	var num_unbreakable_bricks = randi_range(min_unbreakable_bricks, max_unbreakable_bricks)
+
+	var unbreakable_brick_packed_scene = load("res://unbreakable_brick.tscn")
+	if not unbreakable_brick_packed_scene:
+		print("Error: Could not load unbreakable_brick.tscn!")
+		return
+
+	for i in range(num_unbreakable_bricks):
+		var new_unbreakable_brick = unbreakable_brick_packed_scene.instantiate()
+		bricks_node.add_child(new_unbreakable_brick)
+
+		var random_texture_path = unbreakable_brick_textures[randi() % unbreakable_brick_textures.size()]
+		new_unbreakable_brick.set_brick_texture(random_texture_path)
+
+		var random_x = randf_range(SCALED_BRICK_WIDTH / 2, get_viewport().size.x - SCALED_BRICK_WIDTH / 2)
+		var random_y = randf_range(unbreakable_brick_min_y + SCALED_BRICK_HEIGHT / 2, unbreakable_brick_max_y - SCALED_BRICK_HEIGHT / 2)
+		new_unbreakable_brick.position = Vector2(random_x, random_y)
 
 func _input(_event):
 	if Input.is_action_just_pressed("launch"): # Use global Input check

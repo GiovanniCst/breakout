@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://dxd5phxdbhkhp"]
+
+[ext_resource type="Script" uid="uid://b57v5nqi4omx3" path="res://scripts/unbreakable_brick.gd" id="1_yai7y"]
+[ext_resource type="Texture2D" uid="uid://2fuf84eyrlwj" path="res://assets/PNG/22-Breakout-Tiles.png" id="2_yai7y"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_yai7y"]
+
+[node name="UnbreakableBrick" type="StaticBody2D"]
+script = ExtResource("1_yai7y")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.15, 0.15)
+texture = ExtResource("2_yai7y")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_yai7y")
