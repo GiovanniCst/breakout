@@ -47,8 +47,9 @@ This section outlines planned features and areas for development. Tasks are grou
     *   Create additional level scenes (`level_2.tscn`, `level_3.tscn`, etc.).
     *   Implement level loading/progression in `main.gd`.
 *   **Different Brick Types:**
-    *   Implement multi-hit bricks (e.g., requiring 2-3 hits to destroy).
-    *   Implement special bricks (e.g., exploding bricks, bricks that drop power-ups).
+    *   **Multi-Hit Bricks:** Implement bricks that require 2 hits to destroy, with visual changes (e.g., cracked appearance) after the first hit.
+    *   **Unbreakable Bricks:** Implement bricks that cannot be destroyed by the ball.
+    *   **Special Bricks:** (e.g., exploding bricks, bricks that drop power-ups).
     *   (Potentially) Create new brick scenes and scripts (`multi_hit_brick.gd`, `special_brick.gd`).
 *   **Sound Effects:**
     *   Add sound effects for ball bounce, brick destruction, paddle hit.
@@ -58,7 +59,17 @@ This section outlines planned features and areas for development. Tasks are grou
 ### Gameplay Mechanics (Ball & Paddle Interactions)
 
 *   **Power-ups:**
-    *   Design and implement various power-ups (e.g., longer paddle, multi-ball, ball speed boost).
+    *   Design and implement various power-ups that drop from destroyed bricks:
+        *   **Score Bonuses:** (+50, +10, +100, +250, +500)
+        *   **Ball Speed Modifiers:** (Slow, Fast)
+        *   **Multi-Ball:** Spawns additional balls.
+        *   **Laser/Fireball Paddle:** Allows the paddle to shoot projectiles.
+        *   **Paddle Size Modifiers:** (Enlarge, Shrink)
+        *   **Sticky Paddle:** Ball sticks to the paddle until launched again.
+        *   **Extra Life:** Grants an additional life.
+        *   **Bonus Star:** Provides a special bonus.
+        *   **Floor/Shield:** Prevents the ball from going out of bounds temporarily.
+        *   **Special Ball Types:** (e.g., different visual balls, or balls with special properties)
     *   Create new scenes and scripts for power-up items.
     *   Implement logic for power-up activation and duration.
 *   **Ball Speed Progression:**
