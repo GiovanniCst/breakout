@@ -13,10 +13,11 @@ func _ready():
 	if not ball:
 		print("Ball node not found!")
 	
-	# Ball will be launched by spacebar press
-	pass
+	# Pass paddle reference to the ball for initial positioning
+	if ball and paddle:
+		ball.set_paddle_reference(paddle)
 
-func _input(event):
+func _input(_event):
 	if Input.is_action_just_pressed("launch"): # Use global Input check
 		print("Launch action pressed!")
 		if ball and not ball.launched:
@@ -29,5 +30,7 @@ func _on_ball_out_of_bounds(body): # Add 'body' parameter for Area2D signal
 			ball.reset()
 			# Reposition ball above paddle, adjust offset for better placement
 			ball.global_position = paddle.global_position + Vector2(0, -30) # Adjusted offset
+			# Pass paddle reference to the ball again after reset
+			ball.set_paddle_reference(paddle)
 		else:
 			print("Error: Ball node is not valid when out of bounds!")
