@@ -22,8 +22,11 @@ This is a work-in-progress project for learning Godot Engine. It's a simple Brea
     *   Launch the ball by pressing the **Spacebar**.
     *   The ball bounces off walls and the paddle.
     *   If the ball goes out of bounds (below the paddle), it respawns on top of the paddle, waiting for a new launch.
+    *   Ball follows paddle before launch.
+    *   Ball acceleration based on destroyed bricks.
 *   **Brick Destruction:** Bricks are destroyed when hit by the ball.
 *   **Multi-Hit Bricks:** Bricks require 2 hits to destroy, with a visual change (cracked appearance) after the first hit.
+*   **Automatic Brick Population:** Bricks are automatically populated with random non-cracked sprites.
 *   **Unbreakable Tiles:**
     *   Randomly spawned between the breakable tile wall and the paddle.
     *   Use textures from `assets/PNG/22-Breakout-Tiles.png` to `assets/PNG/30-Breakout-Tiles.png`.
@@ -33,6 +36,12 @@ This is a work-in-progress project for learning Godot Engine. It's a simple Brea
     *   The number of unbreakable tiles spawned is related to the game level (1-2 for levels 1-2, 3-7 for higher levels).
 *   **Sound Effects:** Added sound effects for brick hits and destruction.
 *   **Global Game State Management:** Implemented a global `GameManager` (Autoload Singleton) to centralize game state, including score, lives, current level, and high score.
+*   **UI Enhancements:**
+    *   UI hearts now update correctly.
+    *   Explicit UI initialization from `main.gd`.
+    *   Game Over message "Sei morto definitivamente" displayed when lives run out.
+    *   Game resets to level 1 after game over with lives replenished.
+*   **Paddle Animation:** Implemented paddle animation.
 
 ## Todo / Future Features
 
@@ -40,13 +49,6 @@ This section outlines planned features and areas for development. Tasks are grou
 
 ### Game Core Enhancements (Main Scene Logic)
 
-*   **Scoring System:**
-    *   Score tracking is now managed by `GameManager`.
-    *   Display the score on the UI (requires UI elements).
-*   **Lives System:**
-    *   Lives tracking is now managed by `GameManager`.
-    *   Display remaining lives on the UI.
-    *   Implement "Game Over" condition when lives run out.
 *   **Win Condition:**
     *   Detect when all bricks are destroyed in `main.gd`.
     *   Implement a "Win" screen/condition.
@@ -78,8 +80,6 @@ This section outlines planned features and areas for development. Tasks are grou
         *   **Special Ball Types:** (e.g., different visual balls, or balls with special properties)
     *   Create new scenes and scripts for power-up items.
     *   Implement logic for power-up activation and duration.
-*   **Ball Speed Progression:**
-    *   Ball speed progression is now managed by `GameManager` based on destroyed bricks.
 
 ### User Interface (UI/UX Development)
 

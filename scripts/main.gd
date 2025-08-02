@@ -72,6 +72,13 @@ func _ready():
 	# Initialize UI after all nodes are ready
 	ui_node.initialize_ui()
 	
+	# Connect GameManager signals
+	if not GameManager.is_connected("game_over", GameManager._on_game_over_received):
+		GameManager.connect("game_over", GameManager._on_game_over_received)
+	
+	# Reset game state at the start of the game
+	GameManager.reset_game()
+	
 	_populate_bricks() # Call the brick population function
 	_populate_unbreakable_bricks() # Call the unbreakable brick population function
 

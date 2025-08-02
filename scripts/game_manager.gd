@@ -17,6 +17,7 @@ signal lives_updated(new_lives)
 signal level_completed(level)
 signal game_over()
 signal ball_speed_increased(new_speed) # This signal is now emitted by GameManager
+signal game_reset() # New signal for game reset
 
 func _ready():
 	# Load high score from user data if available
@@ -34,6 +35,8 @@ func lose_life():
 	if lives <= 0:
 		emit_signal("game_over")
 		print("Game Over!")
+		# Do not reload scene immediately. Let the UI display the message first.
+		# The scene will be reloaded after a delay by a connected function.
 
 func reset_game():
 	score = 0
@@ -43,6 +46,7 @@ func reset_game():
 	ball_acceleration_rate = 1.0 # Reset acceleration rate
 	emit_signal("score_updated", score)
 	emit_signal("lives_updated", lives)
+	emit_signal("game_reset") # Emit signal when game is reset
 	print("Game reset!")
 
 func next_level():
@@ -83,3 +87,10 @@ func _on_brick_destroyed():
 
 func get_current_ball_speed():
 	return base_ball_speed + (destroyed_bricks_count * ball_acceleration_rate)
+
+func _on_game_over_received():
+	# This function will be connected to the game_over signal
+	# It introduces a delay before reloading the scene
+	await get_tree().create_timer(2.0).timeout # Wait for 2 seconds
+	reset_game() # Reset game state before reloading
+	get_tree().reload_current_scene()

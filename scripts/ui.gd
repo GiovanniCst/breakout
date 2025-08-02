@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var lives_container = $TopUI/LivesContainer
 @onready var score_label = $TopUI/ScoreLabel
 @onready var ball_speed_label = $TopUI/BallSpeedLabel
+@onready var game_over_label = $GameOverLabel
 
 func _ready():
 	print("UI: _ready called. Waiting for main.gd to call initialize_ui().")
@@ -18,11 +19,16 @@ func initialize_ui():
 		GameManager.connect("lives_updated", _on_lives_updated)
 	if not GameManager.is_connected("ball_speed_increased", _on_ball_speed_increased):
 		GameManager.connect("ball_speed_increased", _on_ball_speed_increased)
+	if not GameManager.is_connected("game_over", _on_game_over):
+		GameManager.connect("game_over", _on_game_over)
+	if not GameManager.is_connected("game_reset", _on_game_reset): # New signal for game reset
+		GameManager.connect("game_reset", _on_game_reset)
 	
 	# Initialize UI with current game state
 	_on_score_updated(GameManager.score)
 	_on_lives_updated(GameManager.lives)
 	_on_ball_speed_increased(GameManager.base_ball_speed) # Initial ball speed
+	game_over_label.visible = false # Ensure game over message is hidden at start
 
 func _on_score_updated(new_score: int):
 	print("UI: Received score_updated signal. New score: ", new_score)
@@ -40,3 +46,11 @@ func _on_lives_updated(new_lives: int):
 func _on_ball_speed_increased(new_speed: float):
 	print("UI: Received ball_speed_increased signal. New speed: ", new_speed)
 	ball_speed_label.text = "Speed: " + str(int(new_speed)) # Display as integer
+
+func _on_game_over():
+	print("UI: Received game_over signal. Displaying game over message.")
+	game_over_label.visible = true
+
+func _on_game_reset():
+	print("UI: Received game_reset signal. Hiding game over message.")
+	game_over_label.visible = false
