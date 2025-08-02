@@ -4,12 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://2fuf84eyrlwj" path="res://assets/PNG/22-Breakout-Tiles.png" id="2_yai7y"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_yai7y"]
+radius = 18.1108
 
 [node name="UnbreakableBrick" type="StaticBody2D"]
 script = ExtResource("1_yai7y")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_yai7y")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

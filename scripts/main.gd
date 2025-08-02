@@ -113,8 +113,16 @@ func _populate_unbreakable_bricks():
 
 	var unbreakable_brick_min_y = 200.0 # Starting Y position for unbreakable bricks
 	var unbreakable_brick_max_y = 400.0 # Ending Y position for unbreakable bricks
-	var min_unbreakable_bricks = 3
-	var max_unbreakable_bricks = 7
+	var min_unbreakable_bricks: int
+	var max_unbreakable_bricks: int
+
+	if GameManager.current_level <= 2:
+		min_unbreakable_bricks = 1
+		max_unbreakable_bricks = 2
+	else:
+		min_unbreakable_bricks = 3
+		max_unbreakable_bricks = 7
+	
 	var num_unbreakable_bricks = randi_range(min_unbreakable_bricks, max_unbreakable_bricks)
 
 	var unbreakable_brick_packed_scene = load("res://unbreakable_brick.tscn")
@@ -122,16 +130,42 @@ func _populate_unbreakable_bricks():
 		print("Error: Could not load unbreakable_brick.tscn!")
 		return
 
+	var occupied_rects = []
+	var max_attempts_per_brick = 100 # Max attempts to find a non-overlapping position
+
 	for i in range(num_unbreakable_bricks):
-		var new_unbreakable_brick = unbreakable_brick_packed_scene.instantiate()
-		bricks_node.add_child(new_unbreakable_brick)
+		var found_position = false
+		var attempts = 0
+		var new_brick_position = Vector2.ZERO
 
-		var random_texture_path = unbreakable_brick_textures[randi() % unbreakable_brick_textures.size()]
-		new_unbreakable_brick.set_brick_texture(random_texture_path)
+		while not found_position and attempts < max_attempts_per_brick:
+			var random_x = randf_range(SCALED_BRICK_WIDTH / 2, get_viewport().size.x - SCALED_BRICK_WIDTH / 2)
+			var random_y = randf_range(unbreakable_brick_min_y + SCALED_BRICK_HEIGHT / 2, unbreakable_brick_max_y - SCALED_BRICK_HEIGHT / 2)
+			new_brick_position = Vector2(random_x, random_y)
 
-		var random_x = randf_range(SCALED_BRICK_WIDTH / 2, get_viewport().size.x - SCALED_BRICK_WIDTH / 2)
-		var random_y = randf_range(unbreakable_brick_min_y + SCALED_BRICK_HEIGHT / 2, unbreakable_brick_max_y - SCALED_BRICK_HEIGHT / 2)
-		new_unbreakable_brick.position = Vector2(random_x, random_y)
+			var new_brick_rect = Rect2(new_brick_position.x - SCALED_BRICK_WIDTH / 2, new_brick_position.y - SCALED_BRICK_HEIGHT / 2, SCALED_BRICK_WIDTH, SCALED_BRICK_HEIGHT)
+			
+			var overlap = false
+			for existing_rect in occupied_rects:
+				if new_brick_rect.intersects(existing_rect):
+					overlap = true
+					break
+			
+			if not overlap:
+				found_position = true
+				occupied_rects.append(new_brick_rect)
+			
+			attempts += 1
+
+		if found_position:
+			var new_unbreakable_brick = unbreakable_brick_packed_scene.instantiate()
+			bricks_node.add_child(new_unbreakable_brick)
+
+			var random_texture_path = unbreakable_brick_textures[randi() % unbreakable_brick_textures.size()]
+			new_unbreakable_brick.set_brick_texture(random_texture_path)
+			new_unbreakable_brick.position = new_brick_position
+		else:
+			print("Warning: Could not find a non-overlapping position for an unbreakable brick after ", max_attempts_per_brick, " attempts.")
 
 func _input(_event):
 	if Input.is_action_just_pressed("launch"): # Use global Input check
