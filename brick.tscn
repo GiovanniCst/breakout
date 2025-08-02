@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://j0c0xcw82ega"]
+[gd_scene load_steps=5 format=3 uid="uid://j0c0xcw82ega"]
 
 [ext_resource type="Texture2D" uid="uid://cholw5oj58u0q" path="res://assets/PNG/15-Breakout-Tiles.png" id="1_awxk8"]
 [ext_resource type="Script" uid="uid://bkgp8rsqpts2l" path="res://scripts/brick.gd" id="2_script"]
+[ext_resource type="AudioStream" uid="uid://dse5versfxlad" path="res://sfx/ball_hit.mp3" id="3_audio"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5p85m"]
 size = Vector2(57.381, 19.1388)
@@ -16,3 +17,7 @@ texture = ExtResource("1_awxk8")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0.0334826, -0.010179)
 shape = SubResource("RectangleShape2D_5p85m")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_audio")
+volume_db = -5.0
