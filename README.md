@@ -23,6 +23,7 @@ This is a work-in-progress project for learning Godot Engine. It's a simple Brea
     *   The ball bounces off walls and the paddle.
     *   If the ball goes out of bounds (below the paddle), it respawns on top of the paddle, waiting for a new launch.
 *   **Brick Destruction:** Bricks are destroyed when hit by the ball.
+*   **Global Game State Management:** Implemented a global `GameManager` (Autoload Singleton) to centralize game state, including score, lives, current level, and high score.
 
 ## Todo / Future Features
 
@@ -31,10 +32,10 @@ This section outlines planned features and areas for development. Tasks are grou
 ### Game Core Enhancements (Main Scene Logic)
 
 *   **Scoring System:**
-    *   Implement score tracking in `main.gd`.
+    *   Score tracking is now managed by `GameManager`.
     *   Display the score on the UI (requires UI elements).
 *   **Lives System:**
-    *   Implement lives tracking in `main.gd`.
+    *   Lives tracking is now managed by `GameManager`.
     *   Display remaining lives on the UI.
     *   Implement "Game Over" condition when lives run out.
 *   **Win Condition:**
@@ -73,7 +74,7 @@ This section outlines planned features and areas for development. Tasks are grou
     *   Create new scenes and scripts for power-up items.
     *   Implement logic for power-up activation and duration.
 *   **Ball Speed Progression:**
-    *   Increase ball speed over time or based on score/level progression.
+    *   Ball speed progression is now managed by `GameManager` based on destroyed bricks.
 
 ### User Interface (UI/UX Development)
 

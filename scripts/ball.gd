@@ -1,12 +1,13 @@
 extends CharacterBody2D
 
-@export var speed = 400
 var launched = false
 var paddle_node: Node2D = null # Reference to the paddle
 
 func _ready():
 	# Initial direction (can be randomized or set by main scene)
-	velocity = Vector2(1, -1).normalized() * speed
+	velocity = Vector2(1, -1).normalized() * GameManager.base_ball_speed
+	# Connect to GameManager's ball_speed_increased signal
+	GameManager.connect("ball_speed_increased", update_speed)
 
 func _physics_process(delta):
 	if not launched and is_instance_valid(paddle_node):
@@ -22,8 +23,8 @@ func _physics_process(delta):
 
 func launch():
 	launched = true
-	# Re-initialize velocity when launched
-	velocity = Vector2(1, -1).normalized() * speed
+	# Re-initialize velocity when launched, using current speed from GameManager
+	velocity = Vector2(1, -1).normalized() * GameManager.get_current_ball_speed()
 
 func reset():
 	print("Ball reset called!")
@@ -31,12 +32,15 @@ func reset():
 	# Reset position to paddle or center, to be handled by main scene
 	# For now, just stop movement
 	velocity = Vector2.ZERO
+	# Reset ball speed to base speed from GameManager on reset
+	GameManager.destroyed_bricks_count = 0 # Reset destroyed bricks count in GameManager
+	GameManager.emit_signal("ball_speed_increased", GameManager.base_ball_speed) # Reset ball speed
 
 func update_speed(new_speed: float):
 	# Update the speed and maintain the current direction
-	speed = new_speed
-	velocity = velocity.normalized() * speed
-	print("Ball speed updated to: ", speed)
+	# Note: The 'speed' variable in ball.gd is no longer @exported, it's managed by GameManager
+	velocity = velocity.normalized() * new_speed
+	print("Ball speed updated to: ", new_speed)
 
 func set_paddle_reference(paddle: Node2D):
 	paddle_node = paddle

@@ -10,13 +10,9 @@ extends Node
 @export var brick_spacing_x: float = 5.0 # Horizontal spacing between bricks
 @export var brick_spacing_y: float = 5.0 # Vertical spacing between rows
 
-@export var ball_acceleration_rate: float = 1.0 # How much ball speed increases per destroyed brick
-
 @onready var paddle = $Paddle
 @onready var ball = $Ball
 @onready var bricks_node = $Bricks # Reference to the Bricks Node2D
-
-var destroyed_bricks_count = 0 # Counter for destroyed bricks
 
 # Paths to non-cracked brick textures (odd numbers from 01 to 19)
 var non_cracked_brick_textures = [
@@ -58,7 +54,7 @@ func _populate_bricks():
 	for child in bricks_node.get_children():
 		child.queue_free()
 	
-	destroyed_bricks_count = 0 # Reset destroyed bricks count for new level/population
+	GameManager.destroyed_bricks_count = 0 # Reset destroyed bricks count for new level/population
 
 	var current_x = 0.0
 	var current_y = brick_start_y
@@ -69,8 +65,8 @@ func _populate_bricks():
 			var new_brick = brick_scene.instantiate()
 			bricks_node.add_child(new_brick)
 
-			# Connect the brick_destroyed signal
-			new_brick.connect("brick_destroyed", _on_brick_destroyed)
+			# Connect the brick_destroyed signal to GameManager
+			new_brick.connect("brick_destroyed", GameManager._on_brick_destroyed)
 
 			# Randomly select a non-cracked brick texture
 			var random_texture_path = non_cracked_brick_textures[randi() % non_cracked_brick_textures.size()]
@@ -79,15 +75,6 @@ func _populate_bricks():
 			new_brick.position = Vector2(current_x + SCALED_BRICK_WIDTH / 2, current_y + SCALED_BRICK_HEIGHT / 2) # Position brick by its center
 			current_x += SCALED_BRICK_WIDTH + brick_spacing_x
 		current_y += SCALED_BRICK_HEIGHT + brick_spacing_y
-
-func _on_brick_destroyed():
-	destroyed_bricks_count += 1
-	print("Bricks destroyed: ", destroyed_bricks_count)
-	
-	if is_instance_valid(ball):
-		var new_ball_speed = ball.speed + (destroyed_bricks_count * ball_acceleration_rate)
-		ball.update_speed(new_ball_speed)
-		print("Ball speed increased to: ", new_ball_speed)
 
 func _input(_event):
 	if Input.is_action_just_pressed("launch"): # Use global Input check
