@@ -1,0 +1,64 @@
+[gd_scene load_steps=7 format=3 uid="uid://c4b2i4y81rrjq"]
+
+[ext_resource type="PackedScene" uid="uid://cijubsku4408n" path="res://paddle.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://bme1wtxq52s33" path="res://ball.tscn" id="3_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://j0c0xcw82ega" path="res://brick.tscn" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://c7n3eo0wjus35" path="res://scripts/main.gd" id="4_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_top_bottom"]
+size = Vector2(480, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left_right"]
+size = Vector2(20, 650.49)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("4_script")
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="TopWall" type="StaticBody2D" parent="Walls"]
+position = Vector2(240, 10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/TopWall"]
+position = Vector2(0, -20)
+shape = SubResource("RectangleShape2D_top_bottom")
+
+[node name="LeftWall" type="StaticBody2D" parent="Walls"]
+position = Vector2(10, 320)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/LeftWall"]
+position = Vector2(-20, -1.04065)
+shape = SubResource("RectangleShape2D_left_right")
+
+[node name="RightWall" type="StaticBody2D" parent="Walls"]
+position = Vector2(470, 320)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/RightWall"]
+position = Vector2(20, 0)
+shape = SubResource("RectangleShape2D_left_right")
+
+[node name="BottomWall" type="Area2D" parent="Walls"]
+position = Vector2(240, 650)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/BottomWall"]
+position = Vector2(0, 0.807922)
+shape = SubResource("RectangleShape2D_top_bottom")
+
+[node name="Paddle" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(240, 629.8)
+
+[node name="Ball" parent="." instance=ExtResource("3_1bvp3")]
+position = Vector2(240, 609.876)
+
+[node name="Bricks" type="Node2D" parent="."]
+
+[node name="Brick" parent="Bricks" instance=ExtResource("3_h2yge")]
+position = Vector2(30, 15)
+
+[node name="Brick2" parent="Bricks" instance=ExtResource("3_h2yge")]
+position = Vector2(90, 15)
+
+[node name="Brick3" parent="Bricks" instance=ExtResource("3_h2yge")]
+position = Vector2(150, 15)
+
+[connection signal="body_entered" from="Walls/BottomWall" to="." method="_on_ball_out_of_bounds"]
