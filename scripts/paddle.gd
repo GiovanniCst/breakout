@@ -8,6 +8,7 @@ func _physics_process(_delta):
 		velocity.x = direction * speed
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
+	velocity.y = 0 # Prevent vertical movement
 
 	move_and_slide()
 	
