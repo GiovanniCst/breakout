@@ -24,13 +24,55 @@ This is a work-in-progress project for learning Godot Engine. It's a simple Brea
     *   If the ball goes out of bounds (below the paddle), it respawns on top of the paddle, waiting for a new launch.
 *   **Brick Destruction:** Bricks are destroyed when hit by the ball.
 
-## Future Plans (To be implemented)
+## Todo / Future Features
 
-*   Scoring system.
-*   Multiple lives for the player.
-*   Different types of bricks (e.g., multi-hit bricks).
-*   Power-ups (e.g., longer paddle, multi-ball).
-*   Level progression.
-*   Game over and win conditions.
+This section outlines planned features and areas for development. Tasks are grouped to suggest potential independent work streams for multiple contributors.
+
+### Game Core Enhancements (Main Scene Logic)
+
+*   **Scoring System:**
+    *   Implement score tracking in `main.gd`.
+    *   Display the score on the UI (requires UI elements).
+*   **Lives System:**
+    *   Implement lives tracking in `main.gd`.
+    *   Display remaining lives on the UI.
+    *   Implement "Game Over" condition when lives run out.
+*   **Win Condition:**
+    *   Detect when all bricks are destroyed in `main.gd`.
+    *   Implement a "Win" screen/condition.
+
+### Level Design & Assets (Scene & Asset Management)
+
+*   **Multiple Levels:**
+    *   Create additional level scenes (`level_2.tscn`, `level_3.tscn`, etc.).
+    *   Implement level loading/progression in `main.gd`.
+*   **Different Brick Types:**
+    *   Implement multi-hit bricks (e.g., requiring 2-3 hits to destroy).
+    *   Implement special bricks (e.g., exploding bricks, bricks that drop power-ups).
+    *   (Potentially) Create new brick scenes and scripts (`multi_hit_brick.gd`, `special_brick.gd`).
+*   **Sound Effects:**
+    *   Add sound effects for ball bounce, brick destruction, paddle hit.
+*   **Background Music:**
+    *   Integrate background music for gameplay.
+
+### Gameplay Mechanics (Ball & Paddle Interactions)
+
+*   **Power-ups:**
+    *   Design and implement various power-ups (e.g., longer paddle, multi-ball, ball speed boost).
+    *   Create new scenes and scripts for power-up items.
+    *   Implement logic for power-up activation and duration.
+*   **Ball Speed Progression:**
+    *   Increase ball speed over time or based on score/level progression.
+
+### User Interface (UI/UX Development)
+
+*   **Start Screen:**
+    *   Create a main menu/start screen scene.
+*   **Game Over Screen:**
+    *   Design and implement a "Game Over" screen.
+*   **Win Screen:**
+    *   Design and implement a "Win" screen.
+*   **Pause Menu:**
+    *   Create a pause menu for in-game pausing.
 
 Feel free to explore the code and contribute!
