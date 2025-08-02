@@ -23,6 +23,15 @@ This is a work-in-progress project for learning Godot Engine. It's a simple Brea
     *   The ball bounces off walls and the paddle.
     *   If the ball goes out of bounds (below the paddle), it respawns on top of the paddle, waiting for a new launch.
 *   **Brick Destruction:** Bricks are destroyed when hit by the ball.
+*   **Multi-Hit Bricks:** Bricks require 2 hits to destroy, with a visual change (cracked appearance) after the first hit.
+*   **Unbreakable Tiles:**
+    *   Randomly spawned between the breakable tile wall and the paddle.
+    *   Use textures from `assets/PNG/22-Breakout-Tiles.png` to `assets/PNG/30-Breakout-Tiles.png`.
+    *   Are scaled to 0.15 by default (can be adjusted in the scene).
+    *   Are not destroyed by the ball, acting as static obstacles.
+    *   Collision avoidance ensures they do not overlap during spawning.
+    *   The number of unbreakable tiles spawned is related to the game level (1-2 for levels 1-2, 3-7 for higher levels).
+*   **Sound Effects:** Added sound effects for brick hits and destruction.
 *   **Global Game State Management:** Implemented a global `GameManager` (Autoload Singleton) to centralize game state, including score, lives, current level, and high score.
 
 ## Todo / Future Features
@@ -48,12 +57,8 @@ This section outlines planned features and areas for development. Tasks are grou
     *   Create additional level scenes (`level_2.tscn`, `level_3.tscn`, etc.).
     *   Implement level loading/progression in `main.gd`.
 *   **Different Brick Types:**
-    *   **Multi-Hit Bricks:** Implement bricks that require 2 hits to destroy, with visual changes (e.g., cracked appearance) after the first hit.
-    *   **Unbreakable Bricks:** Implement bricks that cannot be destroyed by the ball.
     *   **Special Bricks:** (e.g., exploding bricks, bricks that drop power-ups).
     *   (Potentially) Create new brick scenes and scripts (`multi_hit_brick.gd`, `special_brick.gd`).
-*   **Sound Effects:**
-    *   Add sound effects for ball bounce, brick destruction, paddle hit.
 *   **Background Music:**
     *   Integrate background music for gameplay.
 
