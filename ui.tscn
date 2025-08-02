@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmk46n1vdpx5w"]
+
+[ext_resource type="Texture2D" uid="uid://gka2uph3lyw4" path="res://assets/PNG/60-Breakout-Tiles.png" id="1_heart"]
+[ext_resource type="Script" uid="uid://bb3xelvksodyv" path="res://scripts/ui.gd" id="2_script"]
+
+[node name="UI" type="CanvasLayer"]
+script = ExtResource("2_script")
+
+[node name="TopUI" type="HBoxContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="LivesContainer" type="HBoxContainer" parent="TopUI"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Heart1" type="TextureRect" parent="TopUI/LivesContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("1_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Heart2" type="TextureRect" parent="TopUI/LivesContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("1_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Heart3" type="TextureRect" parent="TopUI/LivesContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("1_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ScoreLabel" type="Label" parent="TopUI"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Score: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BallSpeedLabel" type="Label" parent="TopUI"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Speed: 400"
+horizontal_alignment = 2
+vertical_alignment = 1

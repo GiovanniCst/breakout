@@ -1,5 +1,7 @@
 extends StaticBody2D
 
+signal brick_destroyed # New signal to emit when a brick is destroyed
+
 @onready var audio_player = $AudioStreamPlayer2D
 @onready var sprite = $Sprite2D # Get reference to the Sprite2D node
 
@@ -58,6 +60,12 @@ func hit():
 		visible = false
 		set_process(false)
 		set_physics_process(false)
+		
+		# Emit signal before queuing for free
+		emit_signal("brick_destroyed")
+		
+		# Add score
+		GameManager.add_score(10) # Add 10 points per destroyed brick
 		
 		# Queue free after a short delay to allow sound to play
 		await get_tree().create_timer(0.2).timeout # Adjust delay as needed

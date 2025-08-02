@@ -10,9 +10,9 @@ extends Node
 @export var brick_spacing_x: float = 5.0 # Horizontal spacing between bricks
 @export var brick_spacing_y: float = 5.0 # Vertical spacing between rows
 
-@onready var paddle = $Paddle
-@onready var ball = $Ball
-@onready var bricks_node = $Bricks # Reference to the Bricks Node2D
+var paddle: Node2D
+var ball: CharacterBody2D
+var bricks_node: Node2D # Reference to the Bricks Node2D
 
 # Paths to non-cracked brick textures (odd numbers from 01 to 19)
 var non_cracked_brick_textures = [
@@ -33,15 +33,31 @@ const SCALED_BRICK_WIDTH = 384 * 0.15
 const SCALED_BRICK_HEIGHT = 128 * 0.15
 
 func _ready():
-	# Ensure ball and paddle are in the scene, or instantiate them if needed
-	if not paddle:
-		print("Paddle node not found!")
-	if not ball:
-		print("Ball node not found!")
+	# Get node references explicitly
+	paddle = get_node("Paddle")
+	ball = get_node("Ball")
+	bricks_node = get_node("Bricks")
+	var ui_node = get_node("UI") # Get reference to the UI node
+
+	# Ensure nodes are found
+	if not is_instance_valid(paddle):
+		print("Error: Paddle node not found!")
+		return
+	if not is_instance_valid(ball):
+		print("Error: Ball node not found!")
+		return
+	if not is_instance_valid(bricks_node):
+		print("Error: Bricks Node2D not found!")
+		return
+	if not is_instance_valid(ui_node):
+		print("Error: UI node not found!")
+		return
 	
 	# Pass paddle reference to the ball for initial positioning
-	if ball and paddle:
-		ball.set_paddle_reference(paddle)
+	ball.set_paddle_reference(paddle)
+	
+	# Initialize UI after all nodes are ready
+	ui_node.initialize_ui()
 	
 	_populate_bricks() # Call the brick population function
 
@@ -86,6 +102,9 @@ func _on_ball_out_of_bounds(body): # Add 'body' parameter for Area2D signal
 	print("Ball out of bounds! Resetting...")
 	if body == ball: # Ensure it's the ball that entered the area
 		if is_instance_valid(ball): # Check if ball node is still valid
+			# Lose a life when ball goes out of bounds
+			GameManager.lose_life()
+			
 			ball.reset()
 			# Reposition ball above paddle, adjust offset for better placement
 			ball.global_position = paddle.global_position + Vector2(0, -30) # Adjusted offset
