@@ -107,7 +107,7 @@ func _on_ball_out_of_bounds(body): # Add 'body' parameter for Area2D signal
 			
 			ball.reset()
 			# Reposition ball above paddle, adjust offset for better placement
-			ball.global_position = paddle.global_position + Vector2(0, -30) # Adjusted offset
+			ball.global_position = paddle.global_position + Vector2(0, -18) # Adjusted offset
 			# Pass paddle reference to the ball again after reset
 			ball.set_paddle_reference(paddle)
 		else:

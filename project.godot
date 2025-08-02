@@ -13,6 +13,7 @@ config_version=5
 config/name="Breakout"
 run/main_scene="uid://c4b2i4y81rrjq"
 config/features=PackedStringArray("4.4", "GL Compatibility")
+run/max_fps=60
 config/icon="res://icon.svg"
 
 [autoload]
@@ -24,6 +25,7 @@ GameManager="*res://scripts/game_manager.gd"
 window/size/viewport_width=480
 window/size/viewport_height=640
 window/stretch/mode="canvas_items"
+window/vsync/vsync_mode=0
 
 [input]
 

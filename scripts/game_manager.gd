@@ -8,8 +8,8 @@ var high_score = 0
 
 # Ball Acceleration
 var destroyed_bricks_count = 0
-var ball_acceleration_rate = 1.0 # Initial acceleration rate
-var base_ball_speed = 400 # Initial ball speed, moved from ball.gd
+var ball_acceleration_rate = 15.0 # Initial acceleration rate
+var base_ball_speed = 500 # Initial ball speed, moved from ball.gd
 
 # Game Signals
 signal score_updated(new_score)
