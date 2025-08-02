@@ -1,6 +1,21 @@
 extends StaticBody2D
 
 @onready var audio_player = $AudioStreamPlayer2D
+@onready var sprite = $Sprite2D # Get reference to the Sprite2D node
+
+func _ready():
+	# Ensure the sprite node exists
+	if not is_instance_valid(sprite):
+		print("Error: Sprite2D node not found in Brick scene!")
+	else:
+		# Set the scale of the sprite
+		sprite.scale = Vector2(0.15, 0.15)
+
+func set_brick_texture(texture_path: String):
+	if is_instance_valid(sprite):
+		sprite.texture = load(texture_path)
+	else:
+		print("Error: Cannot set texture, Sprite2D node is not valid.")
 
 func hit():
 	print("Brick hit! Playing sound...")
