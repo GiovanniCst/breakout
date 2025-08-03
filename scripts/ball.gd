@@ -2,12 +2,12 @@ extends CharacterBody2D
 
 var launched = false
 var paddle_node: Node2D = null # Reference to the paddle
+var current_speed: float = 0.0 # Track the intended speed
 
 func _ready():
 	# Initial direction (can be randomized or set by main scene)
-	velocity = Vector2(1, -1).normalized() * GameManager.base_ball_speed
-	# Connect to GameManager's ball_speed_increased signal
-	GameManager.connect("ball_speed_increased", update_speed)
+	# Speed will be set by Main scene via set_speed
+	velocity = Vector2(1, -1).normalized() * 0 # Start with 0 speed, will be set by Main
 
 func _physics_process(delta):
 	if not launched and is_instance_valid(paddle_node):
@@ -23,8 +23,9 @@ func _physics_process(delta):
 
 func launch():
 	launched = true
-	# Re-initialize velocity when launched, using current speed from GameManager
-	velocity = Vector2(1, -1).normalized() * GameManager.get_current_ball_speed()
+	# Velocity is already set by set_speed, just ensure it's not zero
+	if velocity.length_squared() == 0:
+		velocity = Vector2(1, -1).normalized() * 200 # Fallback default speed
 
 func reset():
 	print("Ball reset called!")
@@ -32,15 +33,19 @@ func reset():
 	# Reset position to paddle or center, to be handled by main scene
 	# For now, just stop movement
 	velocity = Vector2.ZERO
-	# Reset ball speed to base speed from GameManager on reset
-	GameManager.destroyed_bricks_count = 0 # Reset destroyed bricks count in GameManager
-	GameManager.emit_signal("ball_speed_increased", GameManager.base_ball_speed) # Reset ball speed
 
-func update_speed(new_speed: float):
+func set_speed(new_speed: float):
 	# Update the speed and maintain the current direction
-	# Note: The 'speed' variable in ball.gd is no longer @exported, it's managed by GameManager
-	velocity = velocity.normalized() * new_speed
+	current_speed = new_speed
+	if velocity.length_squared() > 0:
+		velocity = velocity.normalized() * new_speed
+	else:
+		# If velocity is zero, use a default direction
+		velocity = Vector2(1, -1).normalized() * new_speed
 	print("Ball speed updated to: ", new_speed)
+
+func get_current_speed() -> float:
+	return current_speed
 
 func set_paddle_reference(paddle: Node2D):
 	paddle_node = paddle

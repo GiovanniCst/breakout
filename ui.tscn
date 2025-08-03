@@ -46,6 +46,13 @@ texture = ExtResource("1_heart")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="LevelLabel" type="Label" parent="TopUI"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Level: 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="ScoreLabel" type="Label" parent="TopUI"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -61,6 +68,7 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="GameOverLabel" type="Label" parent="."]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

@@ -2,50 +2,21 @@ extends Node
 
 @export var ball_scene: PackedScene
 @export var paddle_scene: PackedScene
-@export var brick_scene: PackedScene # Export brick scene for instantiation
-
-@export var brick_rows: int = 3
-@export var bricks_per_row: int = 8
-@export var brick_start_y: float = 50.0 # Starting Y position for the first row
-@export var brick_spacing_x: float = 5.0 # Horizontal spacing between bricks
-@export var brick_spacing_y: float = 5.0 # Vertical spacing between rows
 
 var paddle: Node2D
 var ball: CharacterBody2D
 var bricks_node: Node2D # Reference to the Bricks Node2D
+var pulverize_cooldown = false # Prevent multiple rapid pulverize actions
 
-# Paths to non-cracked brick textures (odd numbers from 01 to 19)
-var non_cracked_brick_textures = [
-	"res://assets/PNG/01-Breakout-Tiles.png",
-	"res://assets/PNG/03-Breakout-Tiles.png",
-	"res://assets/PNG/05-Breakout-Tiles.png",
-	"res://assets/PNG/07-Breakout-Tiles.png",
-	"res://assets/PNG/09-Breakout-Tiles.png",
-	"res://assets/PNG/11-Breakout-Tiles.png",
-	"res://assets/PNG/13-Breakout-Tiles.png",
-	"res://assets/PNG/15-Breakout-Tiles.png",
-	"res://assets/PNG/17-Breakout-Tiles.png",
-	"res://assets/PNG/19-Breakout-Tiles.png"
-]
-
-# Paths to unbreakable brick textures (from 22 to 30)
-var unbreakable_brick_textures = [
-	"res://assets/PNG/22-Breakout-Tiles.png",
-	"res://assets/PNG/23-Breakout-Tiles.png",
-	"res://assets/PNG/24-Breakout-Tiles.png",
-	"res://assets/PNG/25-Breakout-Tiles.png",
-	"res://assets/PNG/26-Breakout-Tiles.png",
-	"res://assets/PNG/27-Breakout-Tiles.png",
-	"res://assets/PNG/28-Breakout-Tiles.png",
-	"res://assets/PNG/29-Breakout-Tiles.png",
-	"res://assets/PNG/30-Breakout-Tiles.png"
-]
-
-# Scaled brick dimensions (original 384x128, scaled by 0.15)
-const SCALED_BRICK_WIDTH = 384 * 0.15
-const SCALED_BRICK_HEIGHT = 128 * 0.15
+@onready var level_generator = LevelGenerator.new()
+@onready var difficulty_manager = DifficultyManager.new()
+const GameParametersClass = preload("res://scripts/game_parameters.gd")
+var game_parameters: Resource
 
 func _ready():
+	# Initialize game parameters instance
+	game_parameters = GameParametersClass.new()
+	
 	# Get node references explicitly
 	paddle = get_node("Paddle")
 	ball = get_node("Ball")
@@ -71,126 +42,161 @@ func _ready():
 	
 	# Initialize UI after all nodes are ready
 	ui_node.initialize_ui()
+
+	# Set initial ball position above the paddle
+	ball.global_position = paddle.global_position + Vector2(0, -18)
 	
 	# Connect GameManager signals
 	if not GameManager.is_connected("game_over", GameManager._on_game_over_received):
 		GameManager.connect("game_over", GameManager._on_game_over_received)
+	if not GameManager.is_connected("level_completed", _on_level_completed): # New: Connect level_completed signal
+		GameManager.connect("level_completed", _on_level_completed)
 	
 	# Reset game state at the start of the game
 	GameManager.reset_game()
-	
-	_populate_bricks() # Call the brick population function
-	_populate_unbreakable_bricks() # Call the unbreakable brick population function
+	difficulty_manager.reset_difficulty() # Reset difficulty at game start
+	# Pass GameManager reference to DifficultyManager
+	difficulty_manager.set_game_manager_reference(GameManager)
+	# Pass game parameters reference to GameManager
+	GameManager.set_game_parameters_reference(game_parameters)
+	# Pass game parameters reference to Paddle
+	if paddle.has_method("set_game_parameters_reference"):
+		paddle.set_game_parameters_reference(game_parameters)
 
-func _populate_bricks():
-	if not is_instance_valid(bricks_node):
-		print("Error: Bricks Node2D not found in Main scene!")
-		return
+	_start_new_level() # Start the first level
 
-	# Clear existing bricks if any (useful for level resets)
+func _start_new_level():
+	# Clear existing bricks
 	for child in bricks_node.get_children():
 		child.queue_free()
 	
-	GameManager.destroyed_bricks_count = 0 # Reset destroyed bricks count for new level/population
-
-	var current_x = 0.0
-	var current_y = brick_start_y
-
-	for row in range(brick_rows):
-		current_x = (get_viewport().size.x - (bricks_per_row * SCALED_BRICK_WIDTH + (bricks_per_row - 1) * brick_spacing_x)) / 2.0 # Center bricks horizontally
-		for col in range(bricks_per_row):
-			var new_brick = brick_scene.instantiate()
-			bricks_node.add_child(new_brick)
-
-			# Connect the brick_destroyed signal to GameManager
-			new_brick.connect("brick_destroyed", GameManager._on_brick_destroyed)
-
-			# Randomly select a non-cracked brick texture
-			var random_texture_path = non_cracked_brick_textures[randi() % non_cracked_brick_textures.size()]
-			new_brick.set_brick_texture(random_texture_path)
-
-			new_brick.position = Vector2(current_x + SCALED_BRICK_WIDTH / 2, current_y + SCALED_BRICK_HEIGHT / 2) # Position brick by its center
-			current_x += SCALED_BRICK_WIDTH + brick_spacing_x
-		current_y += SCALED_BRICK_HEIGHT + brick_spacing_y
-
-func _populate_unbreakable_bricks():
-	if not is_instance_valid(bricks_node):
-		print("Error: Bricks Node2D not found in Main scene for unbreakable bricks!")
-		return
-
-	var unbreakable_brick_min_y = 200.0 # Starting Y position for unbreakable bricks
-	var unbreakable_brick_max_y = 400.0 # Ending Y position for unbreakable bricks
-	var min_unbreakable_bricks: int
-	var max_unbreakable_bricks: int
-
-	if GameManager.current_level <= 2:
-		min_unbreakable_bricks = 1
-		max_unbreakable_bricks = 2
-	else:
-		min_unbreakable_bricks = 3
-		max_unbreakable_bricks = 7
+	# Get level parameters from DifficultyManager
+	var level_params = difficulty_manager.get_level_parameters()
 	
-	var num_unbreakable_bricks = randi_range(min_unbreakable_bricks, max_unbreakable_bricks)
+	# Get viewport size
+	var viewport_size = get_viewport().size
 
-	var unbreakable_brick_packed_scene = load("res://unbreakable_brick.tscn")
-	if not unbreakable_brick_packed_scene:
-		print("Error: Could not load unbreakable_brick.tscn!")
-		return
+	# Generate level, passing viewport size, and get breakable brick count
+	var generated_level_info = level_generator.generate_level(level_params, viewport_size)
+	var generated_level = generated_level_info.level_node
+	var breakable_brick_count = generated_level_info.breakable_brick_count
+	
+	bricks_node.add_child(generated_level)
+	
+	# Inform GameManager about the total number of breakable bricks
+	GameManager.set_total_breakable_bricks(breakable_brick_count)
 
-	var occupied_rects = []
-	var max_attempts_per_brick = 100 # Max attempts to find a non-overlapping position
+	# Update ball speed and paddle scale based on difficulty parameters
+	var ball_speed = level_params.get("ball_speed", GameParametersClass.DEFAULT_BALL_SPEED)
+	if ball.has_method("set_speed"):
+		ball.set_speed(ball_speed)
+	
+	# Update UI with ball speed
+	var ui_node = get_node("UI")
+	if is_instance_valid(ui_node) and ui_node.has_method("_on_ball_speed_increased"):
+		ui_node._on_ball_speed_increased(ball_speed)
+	
+	paddle.scale.x = level_params.get("paddle_scale", GameParametersClass.DEFAULT_PADDLE_SCALE)
 
-	for i in range(num_unbreakable_bricks):
-		var found_position = false
-		var attempts = 0
-		var new_brick_position = Vector2.ZERO
+	# Connect brick_destroyed signal from all newly generated bricks
+	for brick_instance in generated_level.get_children():
+		if brick_instance.has_signal("brick_destroyed"):
+			if not brick_instance.is_connected("brick_destroyed", GameManager._on_brick_destroyed):
+				brick_instance.connect("brick_destroyed", GameManager._on_brick_destroyed)
 
-		while not found_position and attempts < max_attempts_per_brick:
-			var random_x = randf_range(SCALED_BRICK_WIDTH / 2, get_viewport().size.x - SCALED_BRICK_WIDTH / 2)
-			var random_y = randf_range(unbreakable_brick_min_y + SCALED_BRICK_HEIGHT / 2, unbreakable_brick_max_y - SCALED_BRICK_HEIGHT / 2)
-			new_brick_position = Vector2(random_x, random_y)
-
-			var new_brick_rect = Rect2(new_brick_position.x - SCALED_BRICK_WIDTH / 2, new_brick_position.y - SCALED_BRICK_HEIGHT / 2, SCALED_BRICK_WIDTH, SCALED_BRICK_HEIGHT)
-			
-			var overlap = false
-			for existing_rect in occupied_rects:
-				if new_brick_rect.intersects(existing_rect):
-					overlap = true
-					break
-			
-			if not overlap:
-				found_position = true
-				occupied_rects.append(new_brick_rect)
-			
-			attempts += 1
-
-		if found_position:
-			var new_unbreakable_brick = unbreakable_brick_packed_scene.instantiate()
-			bricks_node.add_child(new_unbreakable_brick)
-
-			var random_texture_path = unbreakable_brick_textures[randi() % unbreakable_brick_textures.size()]
-			new_unbreakable_brick.set_brick_texture(random_texture_path)
-			new_unbreakable_brick.position = new_brick_position
-		else:
-			print("Warning: Could not find a non-overlapping position for an unbreakable brick after ", max_attempts_per_brick, " attempts.")
-
-func _input(_event):
-	if Input.is_action_just_pressed("launch"): # Use global Input check
+func _input(event):
+	if event.is_action_pressed("launch"): # Use global Input check
 		print("Launch action pressed!")
 		if ball and not ball.launched:
 			ball.launch()
+	
+	# Development shortcut: Press 'N' to advance to the next level
+	if event.is_action_pressed("next_level_dev"): # Assuming "next_level_dev" action is set up
+		print("Dev: Advancing to next level!")
+		_start_new_level()
+	
+	# Debug shortcut: Press 'X' to pulverize all breakable bricks
+	if event.is_action_pressed("pulverize_bricks") and not pulverize_cooldown:
+		_execute_pulverize()
+	
+	# Toggle God Mode
+	if event.is_action_pressed("god_mode"): # Assuming "god_mode" action is set up
+		game_parameters.is_god_mode_active = not game_parameters.is_god_mode_active
+		print("God Mode: ", "ON" if game_parameters.is_god_mode_active else "OFF")
+		# Update paddle color immediately
+		if paddle.has_method("set_god_mode_color"):
+			paddle.set_god_mode_color(game_parameters.is_god_mode_active)
+
+func _execute_pulverize():
+	pulverize_cooldown = true # Set cooldown to prevent rapid re-execution
+	print("Dev: Pulverizing all breakable bricks!")
+	
+	# Create a list of bricks to destroy to avoid modifying the collection while iterating
+	var bricks_to_destroy = []
+	
+	# Check hierarchy - bricks are children of level nodes
+	for level_node in bricks_node.get_children():
+		for child in level_node.get_children():
+			# Check if the child is a breakable brick
+			if child.has_method("instant_destroy") and not child is UnbreakableBrick:
+				bricks_to_destroy.append(child)
+	
+	print("Dev: Found ", bricks_to_destroy.size(), " breakable bricks to destroy")
+	if bricks_to_destroy.size() > 0:
+		for brick in bricks_to_destroy:
+			brick.instant_destroy()
+	
+	# Clean up any existing cooldown timers to prevent timer accumulation
+	var existing_timers = get_children().filter(func(child): return child is Timer and child.has_signal("timeout"))
+	for timer in existing_timers:
+		if timer.is_connected("timeout", _reset_pulverize_cooldown):
+			timer.queue_free()
+	
+	# Reset cooldown after a delay using a timer
+	var timer = Timer.new()
+	timer.name = "PulverizeCooldownTimer"
+	add_child(timer)
+	timer.wait_time = 3.0
+	timer.one_shot = true
+	timer.timeout.connect(_reset_pulverize_cooldown)
+	timer.start()
+
+func _reset_pulverize_cooldown():
+	pulverize_cooldown = false
+	print("Dev: Pulverize cooldown reset")
+
+func get_ball():
+	return ball
 
 func _on_ball_out_of_bounds(body): # Add 'body' parameter for Area2D signal
-	print("Ball out of bounds! Resetting...")
-	if body == ball: # Ensure it's the ball that entered the area
-		if is_instance_valid(ball): # Check if ball node is still valid
-			# Lose a life when ball goes out of bounds
-			GameManager.lose_life()
-			
-			ball.reset()
-			# Reposition ball above paddle, adjust offset for better placement
-			ball.global_position = paddle.global_position + Vector2(0, -18) # Adjusted offset
-			# Pass paddle reference to the ball again after reset
-			ball.set_paddle_reference(paddle)
-		else:
-			print("Error: Ball node is not valid when out of bounds!")
+	# Only trigger if it's actually the ball that went out of bounds
+	if body == ball and is_instance_valid(ball):
+		print("Ball out of bounds! Resetting...")
+		# Lose a life when ball goes out of bounds
+		GameManager.lose_life()
+		
+		ball.reset()
+		# Reposition ball above paddle, adjust offset for better placement
+		ball.global_position = paddle.global_position + Vector2(0, -18) # Adjusted offset
+		# Pass paddle reference to the ball again after reset
+		ball.set_paddle_reference(paddle)
+		
+		# Reset ball speed and paddle scale to current difficulty settings after losing a life
+		var current_params = difficulty_manager.get_level_parameters()
+		var ball_speed = current_params.get("ball_speed", GameParametersClass.DEFAULT_BALL_SPEED)
+		if ball.has_method("set_speed"):
+			ball.set_speed(ball_speed)
+		paddle.scale.x = current_params.get("paddle_scale", GameParametersClass.DEFAULT_PADDLE_SCALE)
+
+func _on_level_completed(level: int):
+	print("Main: Level ", level, " completed! Advancing to next level.")
+	# Advance to the next level after a short delay
+	await get_tree().create_timer(1.0).timeout # Adjust delay as needed
+	
+	# Call GameManager.next_level() to increment level and update difficulty
+	GameManager.next_level(0.0, 0, 1.0) # Using placeholder values for level clear time, lives lost, and accuracy
+	# Update difficulty manager with the new level number
+	difficulty_manager.update_level_number(GameManager.current_level)
+	
+	# Start the new level
+	_start_new_level()

@@ -1,8 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://c4b2i4y81rrjq"]
+[gd_scene load_steps=7 format=3 uid="uid://c4b2i4y81rrjq"]
 
 [ext_resource type="PackedScene" uid="uid://cijubsku4408n" path="res://paddle.tscn" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://bme1wtxq52s33" path="res://ball.tscn" id="3_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://j0c0xcw82ega" path="res://brick.tscn" id="3_h2yge"]
 [ext_resource type="Script" uid="uid://c7n3eo0wjus35" path="res://scripts/main.gd" id="4_script"]
 [ext_resource type="PackedScene" uid="uid://dmk46n1vdpx5w" path="res://ui.tscn" id="5_ui_scene"]
 
@@ -16,7 +15,6 @@ size = Vector2(20, 650.49)
 script = ExtResource("4_script")
 ball_scene = ExtResource("3_1bvp3")
 paddle_scene = ExtResource("1_ig7tw")
-brick_scene = ExtResource("3_h2yge")
 
 [node name="Walls" type="Node2D" parent="."]
 
