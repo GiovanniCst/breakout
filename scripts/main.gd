@@ -56,7 +56,7 @@ func _ready():
 	GameManager.reset_game()
 	difficulty_manager.reset_difficulty() # Reset difficulty at game start
 	# Pass GameManager reference to DifficultyManager
-	difficulty_manager.set_game_manager_reference(GameManager)
+	GameManager.set_difficulty_manager_reference(difficulty_manager) # Pass DifficultyManager instance to GameManager
 	# Pass game parameters reference to GameManager
 	GameManager.set_game_parameters_reference(game_parameters)
 	# Pass game parameters reference to Paddle
@@ -186,6 +186,12 @@ func _on_ball_out_of_bounds(body): # Add 'body' parameter for Area2D signal
 		var ball_speed = current_params.get("ball_speed", GameParametersClass.DEFAULT_BALL_SPEED)
 		if ball.has_method("set_speed"):
 			ball.set_speed(ball_speed)
+		
+		# Update UI with ball speed after reset
+		var ui_node = get_node("UI")
+		if is_instance_valid(ui_node) and ui_node.has_method("_on_ball_speed_increased"):
+			ui_node._on_ball_speed_increased(ball_speed)
+			
 		paddle.scale.x = current_params.get("paddle_scale", GameParametersClass.DEFAULT_PADDLE_SCALE)
 
 func _on_level_completed(level: int):

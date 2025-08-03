@@ -12,12 +12,12 @@ const UNBREAKABLE_BRICK_SCENE = preload("res://unbreakable_brick.tscn")
 const GameParameters = preload("res://scripts/game_parameters.gd")
 
 # Grid dimensions (will be calculated dynamically)
-const MIN_ROWS = 3 # Minimum number of rows for bricks
+const MIN_ROWS = 1 # Minimum number of rows for bricks
 const MAX_ROWS = 10 # Maximum number of rows for bricks
 const HORIZONTAL_PADDING = 20 # Padding on left and right of the brick grid
 const BRICK_VERTICAL_OFFSET = 100 # Vertical offset from the top of the screen
-const UNBREAKABLE_BRICK_MARGIN = 50 # Margin below the regular brick grid for unbreakable bricks
-const UNBREAKABLE_BRICK_VERTICAL_OFFSET = BRICK_VERTICAL_OFFSET + MAX_ROWS * 19.1388 + UNBREAKABLE_BRICK_MARGIN # Calculated based on max brick grid height
+const UNBREAKABLE_BRICK_MARGIN_TOP = 50 # Margin below the regular brick grid for unbreakable bricks
+const PADDLE_AREA_OFFSET = 100 # Offset from the bottom of the screen to define the top of the paddle's "safe zone"
 const UNBREAKABLE_BRICK_SCALE = 0.7 # Scale factor for unbreakable bricks
 
 func generate_level(level_params: Dictionary, viewport_size: Vector2) -> Dictionary:
@@ -27,6 +27,8 @@ func generate_level(level_params: Dictionary, viewport_size: Vector2) -> Diction
 
 	var brick_density = level_params.get("brick_density", GameParameters.BRICK_DENSITY)
 	var brick_health_range = level_params.get("brick_health_range", GameParameters.BRICK_HEALTH_RANGE)
+	var brick_rows = level_params.get("brick_rows", GameParameters.DEFAULT_BRICK_ROWS) # New: Get brick rows from params
+	var num_unbreakable_bricks = level_params.get("unbreakable_bricks", GameParameters.BASE_UNBREAKABLE_BRICKS) # New: Get unbreakable bricks from params
 	var level_number = level_params.get("level_number", 1) # Default to level 1 if not provided
 
 	# Brick size derived from brick.tscn CollisionShape2D size (scaled)
@@ -43,7 +45,7 @@ func generate_level(level_params: Dictionary, viewport_size: Vector2) -> Diction
 		grid_width = 1
 
 	# Calculate dynamic GRID_HEIGHT based on level number
-	var grid_height = clamp(MIN_ROWS + level_number - 1, MIN_ROWS, MAX_ROWS)
+	var grid_height = clamp(brick_rows, MIN_ROWS, MAX_ROWS) # Use brick_rows from difficulty manager
 
 	# Calculate starting position to center the brick grid horizontally
 	var total_grid_width = grid_width * brick_width
@@ -65,19 +67,42 @@ func generate_level(level_params: Dictionary, viewport_size: Vector2) -> Diction
 				level_node.add_child(brick_instance)
 
 	# Generate unbreakable bricks below the main grid
-	var available_columns = []
-	for col in range(grid_width):
-		available_columns.append(col)
-	available_columns.shuffle() # Randomize the order of columns
+	# Generate unbreakable bricks in a scattered, non-overlapping manner within the safe area
+	var safe_area_y_start = start_y + grid_height * brick_height + UNBREAKABLE_BRICK_MARGIN_TOP
+	var safe_area_y_end = viewport_size.y - PADDLE_AREA_OFFSET - brick_height # Ensure it's above the paddle area
 
-	var num_unbreakable_bricks_to_spawn = GameParameters.BASE_UNBREAKABLE_BRICKS + (level_number - 1)
-	for i in range(min(num_unbreakable_bricks_to_spawn, available_columns.size())):
+	# Ensure safe_area_y_start is not below safe_area_y_end
+	if safe_area_y_start >= safe_area_y_end:
+		safe_area_y_start = safe_area_y_end - brick_height # Adjust if area is too small
+
+	# Calculate a virtual grid for unbreakable bricks within the safe area
+	var scaled_brick_width = brick_width * UNBREAKABLE_BRICK_SCALE
+	var scaled_brick_height = brick_height * UNBREAKABLE_BRICK_SCALE
+
+	# Calculate a virtual grid for unbreakable bricks within the safe area using scaled dimensions
+	var unbreakable_grid_cols = floor((viewport_width - (HORIZONTAL_PADDING * 2)) / scaled_brick_width)
+	if unbreakable_grid_cols <= 0: unbreakable_grid_cols = 1
+	
+	var unbreakable_grid_rows = floor((safe_area_y_end - safe_area_y_start) / scaled_brick_height)
+	if unbreakable_grid_rows <= 0: unbreakable_grid_rows = 1
+
+	var available_unbreakable_positions = []
+	for row in range(unbreakable_grid_rows):
+		for col in range(unbreakable_grid_cols):
+			available_unbreakable_positions.append(Vector2(col, row))
+	available_unbreakable_positions.shuffle()
+
+	for i in range(min(num_unbreakable_bricks, available_unbreakable_positions.size())):
 		var unbreakable_brick_instance = UNBREAKABLE_BRICK_SCENE.instantiate()
 		unbreakable_brick_instance.name = "UnbreakableBrick_" + str(i + 1) # Naming convention
-		var chosen_column = available_columns[i]
-		var random_x = start_x + chosen_column * brick_width
-		var random_y = UNBREAKABLE_BRICK_VERTICAL_OFFSET + randf() * 50 # Randomize Y position slightly
-		unbreakable_brick_instance.position = Vector2(random_x, random_y)
+		
+		var chosen_cell = available_unbreakable_positions[i]
+		
+		# Calculate position based on grid cell, with some random offset within the cell
+		var pos_x = HORIZONTAL_PADDING + (chosen_cell.x * scaled_brick_width) + (scaled_brick_width / 2.0)
+		var pos_y = safe_area_y_start + (chosen_cell.y * scaled_brick_height) + (scaled_brick_height / 2.0)
+		
+		unbreakable_brick_instance.position = Vector2(pos_x, pos_y)
 		unbreakable_brick_instance.scale = Vector2(UNBREAKABLE_BRICK_SCALE, UNBREAKABLE_BRICK_SCALE) # Apply scale
 		level_node.add_child(unbreakable_brick_instance)
 

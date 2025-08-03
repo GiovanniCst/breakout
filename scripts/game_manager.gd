@@ -113,12 +113,26 @@ func increase_ball_speed():
 	if main_scene and main_scene.has_method("get_ball"):
 		var ball = main_scene.get_ball()
 		if ball and ball.has_method("set_speed") and ball.has_method("get_current_speed"):
-			# Increase speed by 10% from the tracked speed
-			var current_speed = ball.get_current_speed()
-			var new_speed = min(current_speed * 1.1, GameParametersClass.MAX_BALL_SPEED)
-			ball.set_speed(new_speed)
-			emit_signal("ball_speed_increased", new_speed)
-			print("Ball speed increased to: ", new_speed)
+			if is_instance_valid(difficulty_manager_ref): # Ensure difficulty_manager_ref is valid
+				var current_speed = ball.get_current_speed()
+				
+				# Get level-dependent speed increase rate from DifficultyManager
+				var level_params = difficulty_manager_ref.get_level_parameters()
+				var current_level = level_params.get("level_number", 1)
+				var speed_increase_multiplier = 1.0 + (GameParametersClass.BALL_SPEED_INCREASE_RATE_PER_LEVEL * current_level)
+				
+				var new_speed = min(current_speed * speed_increase_multiplier, GameParametersClass.MAX_BALL_SPEED)
+				ball.set_speed(new_speed)
+				emit_signal("ball_speed_increased", new_speed)
+				print("Ball speed increased to: ", new_speed, " (Level-dependent multiplier: ", speed_increase_multiplier, ")")
+			else:
+				print("GameManager: DifficultyManager reference not set, cannot increase ball speed with level-dependent rate.")
+				# Fallback to a default speed increase if DifficultyManager is not ready
+				var current_speed = ball.get_current_speed()
+				var new_speed = min(current_speed * 1.1, GameParametersClass.MAX_BALL_SPEED)
+				ball.set_speed(new_speed)
+				emit_signal("ball_speed_increased", new_speed)
+				print("Ball speed increased to: ", new_speed, " (Using default rate due to missing DifficultyManager)")
 
 func _on_game_over_received():
 	# This function will be connected to the game_over signal
@@ -133,3 +147,6 @@ func set_total_breakable_bricks(count: int):
 
 func set_game_parameters_reference(params: Resource):
 	game_parameters_ref = params
+
+func set_difficulty_manager_reference(dm: Node):
+	difficulty_manager_ref = dm
