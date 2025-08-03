@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://c4b2i4y81rrjq"]
+[gd_scene load_steps=8 format=3 uid="uid://c4b2i4y81rrjq"]
 
 [ext_resource type="PackedScene" uid="uid://cijubsku4408n" path="res://paddle.tscn" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://bme1wtxq52s33" path="res://ball.tscn" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://c7n3eo0wjus35" path="res://scripts/main.gd" id="4_script"]
 [ext_resource type="PackedScene" uid="uid://dmk46n1vdpx5w" path="res://ui.tscn" id="5_ui_scene"]
+[ext_resource type="Texture2D" uid="uid://cu8t7hxu8067u" path="res://assets/background/background.jpg" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_top_bottom"]
 size = Vector2(480, 20)
@@ -16,13 +17,22 @@ script = ExtResource("4_script")
 ball_scene = ExtResource("3_1bvp3")
 paddle_scene = ExtResource("1_ig7tw")
 
+[node name="Background" type="TextureRect" parent="."]
+offset_left = -443.0
+offset_top = -101.0
+offset_right = 709.0
+offset_bottom = 814.0
+texture = ExtResource("6")
+expand_mode = 2
+stretch_mode = 5
+
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="TopWall" type="StaticBody2D" parent="Walls"]
 position = Vector2(240, 10)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/TopWall"]
-position = Vector2(0, -20)
+position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_top_bottom")
 
 [node name="LeftWall" type="StaticBody2D" parent="Walls"]
